@@ -12,6 +12,7 @@
 %token ID ENTEROS DECIMALES CADENA
 %token AND OR
 %token INTEGER DECIMAL VARCHAR
+%error-verbose
 
 %%
 LINEA
@@ -48,16 +49,17 @@ FUNCION
     | AVG '(' ID ')' 
     | COUNT '(' ID ')' 
 ;
+ARGS
+    : ARG ',' ARGS 
+    | ARG 
+;
 ARG
     :ID INTEGER '(' ENTEROS ')' 
     | ID DECIMAL '(' ENTEROS ')' 
     | ID VARCHAR '(' ENTEROS ')' 
 ;
 
-ARGS
-    : ARG ',' ARGS 
-    | ARG 
-;
+
 IDS
     : ID 
     | ID ',' IDS 
@@ -65,6 +67,19 @@ IDS
 NUMERO
     :ENTEROS 
     |DECIMALES 
+;
+
+CONDICIONES
+    : CONDICION 
+    | CONDICION AND CONDICIONES 
+    | CONDICION OR CONDICIONES 
+;
+CONDICION
+    :ID OPIGUALDAD ID 
+    |ID OPCONDICION ID 
+    |ID OPIGUALDAD NUMERO 
+    |ID OPCONDICION NUMERO 
+    |ID OPIGUALDAD CADENA 
 ;
 OPIGUALDAD
     :'=''=' 
@@ -77,18 +92,7 @@ OPCONDICION
     |'<''=' 
     |'>''=' 
 ;
-CONDICION
-    :ID OPIGUALDAD ID 
-    |ID OPCONDICION ID 
-    |ID OPIGUALDAD NUMERO 
-    |ID OPCONDICION NUMERO 
-    |ID OPIGUALDAD CADENA 
-;
-CONDICIONES
-    : CONDICION 
-    | CONDICION AND CONDICIONES 
-    | CONDICION OR CONDICIONES 
-;
+
 ORDEN
     :ASC 
     |DESC 
@@ -101,6 +105,7 @@ int main(int argc, char **argv) {
 
     yyin = fopen(argv[1], "r");
     yyout = fopen(argv[3], "w");
+
     yyparse();
     if(!errorf){
         printf("Correcto");
@@ -119,5 +124,5 @@ void yyerror(char *s) {
         printf("Incorrecto");
     }
     printf( "line %d: %s\n",yylineno, s);
-    
+    printf("Error: %s", s);    
 }
